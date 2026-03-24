@@ -55,7 +55,7 @@ cat("Customers:", nrow(customers), "| Orders:", nrow(orders),
     "| Deliveries:", nrow(deliveries), "\n")
 
 # 2. SQL QUERIES IN R
-# --- SQL Query 1: Delivery failure rates by pickup zone ---
+#  SQL Query 1: Delivery failure rates by pickup zone 
 cat("\n=== SQL Query 1: Delivery Failure Rate by Zone ===\n")
 q1 <- sqldf("
   SELECT o.pickup_zone,
@@ -72,7 +72,7 @@ q1 <- sqldf("
 ")
 print(q1)
 
-# --- SQL Query 2: High-value repeat complainers ---
+#  SQL Query 2: High-value repeat complainers 
 cat("\n=== SQL Query 2: Repeat Complainers Joined with Customer Data ===\n")
 q2 <- sqldf("
   SELECT c.customer_id,
@@ -90,7 +90,7 @@ q2 <- sqldf("
 ")
 print(q2)
 
-# --- SQL Query 3: Hub-level operational overview ---
+#  SQL Query 3: Hub-level operational overview 
 cat("\n=== SQL Query 3: Hub Performance Overview ===\n")
 q3 <- sqldf("
   SELECT d.hub_id,
@@ -110,7 +110,7 @@ q3 <- sqldf("
 ")
 print(q3)
 
-# --- SQL Query 4: Driver performance with incident history ---
+# SQL Query 4: Driver performance with incident history 
 cat("\n=== SQL Query 4: Drivers with Incidents and Low Ratings ===\n")
 q4 <- sqldf("
   SELECT d.driver_id,
@@ -131,7 +131,7 @@ q4 <- sqldf("
 ")
 print(q4)
 
-# --- SQL Query 5: Service profitability by type ---
+# SQL Query 5: Service profitability by type 
 cat("\n=== SQL Query 5: Service Type Profitability Analysis ===\n")
 q5 <- sqldf("
   SELECT o.service_type,
