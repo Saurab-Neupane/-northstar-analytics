@@ -1,7 +1,5 @@
-# ============================================================
 # NorthStar Urban Mobility – SQL in R Analytics
 # Databases and Analytics Assignment
-# ============================================================
 
 # Install and load required packages
 if (!require("sqldf")) install.packages("sqldf", quietly=TRUE)
@@ -14,15 +12,13 @@ library(ggplot2)
 library(dplyr)
 library(lubridate)
 
-# ============================================================
 # 1. LOAD AND CLEAN DATA
-# ============================================================
-customers  <- read.csv("customers.csv",  stringsAsFactors=FALSE)
-orders     <- read.csv("orders.csv",     stringsAsFactors=FALSE)
+customers  <- read.csv("customers.csv", stringsAsFactors=FALSE)
+orders  <- read.csv("orders.csv",  stringsAsFactors=FALSE)
 deliveries <- read.csv("deliveries.csv", stringsAsFactors=FALSE)
-drivers    <- read.csv("drivers.csv",    stringsAsFactors=FALSE)
-vehicles   <- read.csv("vehicles.csv",   stringsAsFactors=FALSE)
-hubs       <- read.csv("hubs.csv",       stringsAsFactors=FALSE)
+drivers  <- read.csv("drivers.csv", stringsAsFactors=FALSE)
+vehicles <- read.csv("vehicles.csv", stringsAsFactors=FALSE)
+hubs  <- read.csv("hubs.csv", stringsAsFactors=FALSE)
 complaints <- read.csv("complaints.csv", stringsAsFactors=FALSE)
 incidents  <- read.csv("incidents.csv",  stringsAsFactors=FALSE)
 app_events <- read.csv("app_events.csv", stringsAsFactors=FALSE)
@@ -32,8 +28,8 @@ standardise_zone <- function(z) {
   z <- trimws(z)
   z <- tolower(z)
   zones <- c(airport="Airport", central="Central", ctr="Central",
-             east="East", north="North", south="South",
-             west="West", riverside="Riverside", riverside="Riverside")
+   east="East", north="North", south="South",
+  west="West", riverside="Riverside", riverside="Riverside")
   result <- zones[z]
   ifelse(is.na(result), tools::toTitleCase(z), result)
 }
@@ -58,20 +54,17 @@ cat("Data loaded and cleaned.\n")
 cat("Customers:", nrow(customers), "| Orders:", nrow(orders), 
     "| Deliveries:", nrow(deliveries), "\n")
 
-# ============================================================
 # 2. SQL QUERIES IN R
-# ============================================================
-
 # --- SQL Query 1: Delivery failure rates by pickup zone ---
 cat("\n=== SQL Query 1: Delivery Failure Rate by Zone ===\n")
 q1 <- sqldf("
   SELECT o.pickup_zone,
-         COUNT(*) AS total_deliveries,
-         SUM(CASE WHEN d.delivery_status = 'Failed' THEN 1 ELSE 0 END) AS failed,
-         SUM(CASE WHEN d.delivery_status = 'Delayed' THEN 1 ELSE 0 END) AS delayed,
-         ROUND(100.0 * SUM(CASE WHEN d.delivery_status = 'Failed' THEN 1 ELSE 0 END) 
-               / COUNT(*), 2) AS failure_pct,
-         ROUND(AVG(d.customer_rating_post_delivery), 3) AS avg_rating
+     COUNT(*) AS total_deliveries,
+    SUM(CASE WHEN d.delivery_status = 'Failed' THEN 1 ELSE 0 END) AS failed,
+    SUM(CASE WHEN d.delivery_status = 'Delayed' THEN 1 ELSE 0 END) AS delayed,
+    ROUND(100.0 * SUM(CASE WHEN d.delivery_status = 'Failed' THEN 1 ELSE 0 END) 
+       / COUNT(*), 2) AS failure_pct,
+    ROUND(AVG(d.customer_rating_post_delivery), 3) AS avg_rating
   FROM deliveries d
   JOIN orders o ON d.order_id = o.order_id
   GROUP BY o.pickup_zone
@@ -154,10 +147,7 @@ q5 <- sqldf("
 ")
 print(q5)
 
-# ============================================================
 # 3. OPTIMISED SQL WITH INDEXING CONCEPTS IN R
-# ============================================================
-
 # Creating an indexed subset for hub-zone query performance
 # In a real DB, this represents: CREATE INDEX idx_del_hub ON deliveries(hub_id);
 cat("\n=== SQL Query 6 (Optimised): Zone-to-Zone Demand Matrix ===\n")
@@ -173,10 +163,7 @@ q6 <- sqldf("
 ")
 print(q6)
 
-# ============================================================
 # 4. R ANALYTICS (Statistical)
-# ============================================================
-
 # Parse datetime columns
 deliveries$dispatch_time <- ymd_hms(deliveries$dispatch_time)
 deliveries$delivery_completed_at <- ymd_hms(deliveries$delivery_completed_at)
@@ -185,9 +172,8 @@ deliveries$actual_duration_hrs <- as.numeric(difftime(
 
 # Pearson correlation matrix
 cat("\n=== Pearson Correlation Matrix (Deliveries) ===\n")
-num_cols <- deliveries[, c("manual_route_override_count","route_distance_km",
-                            "customer_rating_post_delivery","fuel_or_charge_cost",
-                            "actual_duration_hrs")]
+num_cols <- deliveries[, c("manual_route_override_count","route_distance_km", "customer_rating_post_delivery","fuel_or_charge_cost",
+ "actual_duration_hrs")]
 num_cols <- num_cols[complete.cases(num_cols), ]
 print(round(cor(num_cols, method="pearson"), 4))
 
@@ -205,10 +191,7 @@ without_override <- deliveries$customer_rating_post_delivery[
   deliveries$manual_route_override_count == 0 & !is.na(deliveries$customer_rating_post_delivery)]
 print(t.test(with_override, without_override))
 
-# ============================================================
 # 5. VISUALISATIONS IN R
-# ============================================================
-
 # Plot 1: Delivery status distribution
 ggplot(deliveries, aes(x=delivery_status, fill=delivery_status)) +
   geom_bar() +
@@ -219,7 +202,7 @@ ggplot(deliveries, aes(x=delivery_status, fill=delivery_status)) +
 # Plot 2: Hub failure rates
 hub_summary <- sqldf("
   SELECT d.hub_id, h.hub_name,
-         ROUND(100.0*SUM(CASE WHEN delivery_status='Failed' THEN 1 ELSE 0 END)/COUNT(*),1) AS fail_pct
+   ROUND(100.0*SUM(CASE WHEN delivery_status='Failed' THEN 1 ELSE 0 END)/COUNT(*),1) AS fail_pct
   FROM deliveries d JOIN hubs h ON d.hub_id=h.hub_id
   GROUP BY d.hub_id ORDER BY fail_pct DESC")
 
