@@ -1,8 +1,6 @@
-# ============================================================
 # NorthStar Urban Mobility – MongoDB Atlas Development
 # Databases and Analytics Assignment
 # PyMongo: NoSQL Design, CRUD, Aggregation & Optimisation
-# ============================================================
 
 # Install: pip install pymongo[srv] pandas
 from pymongo import MongoClient, ASCENDING, DESCENDING, TEXT
@@ -13,19 +11,15 @@ import json
 from datetime import datetime
 import pprint
 
-# ============================================================
 # 1. CONNECTION
-# ============================================================
-# Replace with your MongoDB Atlas connection string
+# Replace with the MongoDB Atlas connection string
 CONNECTION_STRING = "mongodb+srv://<username>:<password>@<cluster>.mongodb.net/?retryWrites=true&w=majority"
 
 client = MongoClient(CONNECTION_STRING)
 db = client["northstar_db"]
 print("Connected to MongoDB Atlas:", db.name)
 
-# ============================================================
 # 2. DATA LOADING & CLEANING
-# ============================================================
 def standardise_zone(z):
     if pd.isna(z): return None
     z = str(z).strip()
@@ -41,20 +35,17 @@ def standardise_zone(z):
     return mapping.get(z, z.title())
 
 dfs = {}
-for f in ['customers','orders','deliveries','drivers','vehicles',
-          'hubs','complaints','incidents','app_events']:
+for f in ['customers','orders','deliveries','drivers','vehicles','hubs','complaints','incidents','app_events']:
     dfs[f] = pd.read_csv(f'{f}.csv')
 
 for df_name in ['customers','orders','drivers','vehicles']:
     for col in dfs[df_name].columns:
         if 'zone' in col.lower():
-            dfs[df_name][col] = dfs[df_name][col].apply(standardise_zone)
+        dfs[df_name][col] = dfs[df_name][col].apply(standardise_zone)
 
 dfs['app_events']['zone_context'] = dfs['app_events']['zone_context'].apply(standardise_zone)
 
-# ============================================================
 # 3. NOSQL DOCUMENT DESIGN RATIONALE
-# ============================================================
 """
 DESIGN DECISION:
 NorthStar requires three MongoDB collections reflecting operational reality:
@@ -77,9 +68,7 @@ This design avoids the rigid FK constraints that prevent NorthStar from
 combining exception records, nested histories, and semi-structured data.
 """
 
-# ============================================================
 # 4. BUILD AND INSERT COLLECTION 1: customer_cases
-# ============================================================
 print("\n=== Building customer_cases collection ===")
 
 customers_df = dfs['customers'].copy()
@@ -148,9 +137,7 @@ print(f"  Inserted {len(result.inserted_ids)} customer case documents")
 print("\nSample customer_cases document:")
 pprint.pprint(db.customer_cases.find_one({"total_complaints": {"$gte": 2}}))
 
-# ============================================================
 # 5. BUILD COLLECTION 2: delivery_operations
-# ============================================================
 print("\n=== Building delivery_operations collection ===")
 
 deliveries_df = dfs['deliveries'].copy()
@@ -218,9 +205,7 @@ db.delivery_operations.drop()
 result = db.delivery_operations.insert_many(delivery_docs)
 print(f"  Inserted {len(result.inserted_ids)} delivery_operations documents")
 
-# ============================================================
 # 6. BUILD COLLECTION 3: app_session_events
-# ============================================================
 print("\n=== Building app_session_events collection ===")
 
 ae_df = dfs['app_events'].copy()
@@ -268,9 +253,7 @@ db.app_session_events.drop()
 result = db.app_session_events.insert_many(session_docs)
 print(f"  Inserted {len(result.inserted_ids)} app_session_events documents")
 
-# ============================================================
 # 7. CRUD OPERATIONS
-# ============================================================
 print("\n=== CRUD OPERATIONS ===")
 
 # CREATE - Add a new complaint to an existing customer
@@ -318,9 +301,7 @@ db.customer_cases.update_one(
 )
 print("DELETE: Removed test complaint from C0001")
 
-# ============================================================
 # 8. AGGREGATION PIPELINE QUERIES
-# ============================================================
 print("\n=== AGGREGATION PIPELINE QUERIES ===")
 
 # Aggregation 1: Average rating and failure rate by hub
@@ -401,9 +382,7 @@ app_results = list(db.app_session_events.aggregate(pipeline_app))
 for r in app_results:
     print(f"  {r['_id']}: {r['total_sessions']} problem sessions, avg latency {round(r['avg_latency'],0)}ms")
 
-# ============================================================
 # 9. QUERY OPTIMISATION: INDEXING
-# ============================================================
 print("\n=== QUERY OPTIMISATION: INDEXING ===")
 
 # Create compound index on delivery_operations
@@ -444,9 +423,7 @@ db.app_session_events.create_index(
 )
 print("  Created indexes on app_session_events: customer+latency, has_escalation")
 
-# ============================================================
 # 10. EXPLAIN PLAN – BEFORE AND AFTER INDEX
-# ============================================================
 print("\n=== EXPLAIN PLAN ANALYSIS ===")
 
 # Simulate before-index scenario with a hint to ignore indexes
