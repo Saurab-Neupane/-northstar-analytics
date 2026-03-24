@@ -1,7 +1,5 @@
-# ============================================================
 # NorthStar Urban Mobility – Python Data Processing & Analytics
 # Databases and Analytics Assignment
-# ============================================================
 
 # Install required libraries (Google Colab)
 # !pip install pandas numpy matplotlib seaborn scipy
@@ -15,15 +13,13 @@ from scipy import stats
 import warnings
 warnings.filterwarnings('ignore')
 
-# ============================================================
 # 1. DATA LOADING
-# ============================================================
+
 dfs = {}
-files = ['customers','orders','deliveries','drivers','vehicles',
-         'hubs','complaints','incidents','app_events']
+files = ['customers','orders','deliveries','drivers','vehicles','hubs','complaints','incidents','app_events']
 for f in files:
-    dfs[f] = pd.read_csv(f'{f}.csv')
-    print(f"Loaded {f}: {dfs[f].shape}")
+ dfs[f] = pd.read_csv(f'{f}.csv')
+ print(f"Loaded {f}: {dfs[f].shape}")
 
 customers  = dfs['customers']
 orders     = dfs['orders']
@@ -35,9 +31,7 @@ complaints = dfs['complaints']
 incidents  = dfs['incidents']
 app_events = dfs['app_events']
 
-# ============================================================
 # 2. DATA CLEANING & FEATURE ENGINEERING
-# ============================================================
 
 def standardise_zone(z):
     """Normalise inconsistent zone naming across all datasets."""
@@ -58,8 +52,8 @@ def standardise_zone(z):
 for df_name in ['customers','orders','drivers','vehicles']:
     df = dfs[df_name]
     for col in df.columns:
-        if 'zone' in col.lower():
-            dfs[df_name][col] = df[col].apply(standardise_zone)
+ if 'zone' in col.lower():
+dfs[df_name][col] = df[col].apply(standardise_zone)
 
 dfs['app_events']['zone_context'] = dfs['app_events']['zone_context'].apply(standardise_zone)
 
@@ -81,7 +75,7 @@ customers['preferred_channel'] = customers['preferred_channel'].fillna(
 drivers['training_score'] = drivers['training_score'].fillna(drivers['training_score'].median())
 
 # 4. Vehicles: fill battery_health_pct with per-type median
-vehicles['battery_health_pct'] = vehicles.groupby('vehicle_type')['battery_health_pct']    .transform(lambda x: x.fillna(x.median()))
+vehicles['battery_health_pct'] = vehicles.groupby('vehicle_type')['battery_health_pct'].transform(lambda x: x.fillna(x.median()))
 
 # 5. Incidents: fill resolved_hours with median
 incidents['resolved_hours'] = incidents['resolved_hours'].fillna(incidents['resolved_hours'].median())
@@ -113,14 +107,12 @@ print("\nFeature engineering complete.")
 print(f"New delivery features: actual_duration_hrs, cost_per_km, dispatch_hour, high_override")
 print(f"New customer features: complaint_count, total_comp")
 
-# ============================================================
 # 3. DESCRIPTIVE STATISTICS
-# ============================================================
 
 print("\n=== DESCRIPTIVE STATISTICS ===")
 print("\n--- Deliveries ---")
 print(deliveries[['route_distance_km','customer_rating_post_delivery',
-                   'fuel_or_charge_cost','actual_duration_hrs']].describe().round(3))
+'fuel_or_charge_cost','actual_duration_hrs']].describe().round(3))
 
 print("\n--- Orders ---")
 print(orders[['order_value','promised_window_hours']].describe().round(3))
@@ -130,14 +122,11 @@ status_dist = deliveries['delivery_status'].value_counts()
 for s, c in status_dist.items():
     print(f"  {s}: {c} ({c/len(deliveries)*100:.1f}%)")
 
-# ============================================================
 # 4. ANALYTICAL FINDINGS
-# ============================================================
-
 # Finding 1: Zone-level failure analysis
 print("\n=== Finding 1: Delivery Outcomes by Pickup Zone ===")
 merged = deliveries.merge(orders, on='order_id', how='left')
-zone_fail = merged.groupby('pickup_zone')['delivery_status']    .value_counts(normalize=True).unstack().fillna(0) * 100
+zone_fail = merged.groupby('pickup_zone')['delivery_status'].value_counts(normalize=True).unstack().fillna(0) * 100
 zone_fail.columns.name = None
 print(zone_fail.round(1))
 
@@ -151,7 +140,7 @@ hub_perf = deliveries.groupby('hub_id').agg(
 ).reset_index()
 hub_perf['failure_pct'] = (hub_perf['failed'] / hub_perf['total'] * 100).round(1)
 hub_perf = hub_perf.merge(hubs[['hub_id','hub_name']], on='hub_id', how='left')
-print(hub_perf[['hub_name','total','failure_pct','avg_rating','avg_overrides']]      .sort_values('failure_pct', ascending=False).round(3))
+print(hub_perf[['hub_name','total','failure_pct','avg_rating','avg_overrides']].sort_values('failure_pct', ascending=False).round(3))
 
 # Finding 3: Vehicle risk assessment
 print("\n=== Finding 3: High-Risk Vehicles ===")
@@ -160,7 +149,7 @@ high_risk_veh = vehicles[
     (vehicles['odometer_km'] > 150000)
 ].copy()
 print(f"Vehicles in InRepair with odometer >150k km: {len(high_risk_veh)}")
-print(high_risk_veh[['vehicle_id','vehicle_type','odometer_km','battery_health_pct']]      .sort_values('odometer_km', ascending=False).head(8))
+print(high_risk_veh[['vehicle_id','vehicle_type','odometer_km','battery_health_pct']].sort_values('odometer_km', ascending=False).head(8))
 
 # Finding 4: Manual override correlation
 print("\n=== Finding 4: Manual Override Analysis ===")
@@ -178,16 +167,13 @@ print(complaints.groupby(['complaint_type','severity'])['complaint_id'].count().
 
 # Finding 6: App latency issues
 print("\n=== Finding 6: App Event API Latency (ms) ===")
-print(app_events.groupby('event_type')['api_latency_ms']      .agg(['mean','median','max']).sort_values('mean', ascending=False).round(1))
+print(app_events.groupby('event_type')['api_latency_ms'].agg(['mean','median','max']).sort_values('mean', ascending=False).round(1))
 
-# ============================================================
 # 5. VISUALISATIONS
-# ============================================================
-
 fig_colors = ['#2980b9','#e74c3c','#f39c12','#27ae60','#8e44ad','#16a085','#d35400','#2c3e50']
 status_colors = {'OnTime':'#2ecc71','Delayed':'#f39c12','Failed':'#e74c3c'}
 
-# --- Figure 1: Delivery Status Pie + Bar ---
+#  Figure 1: Delivery Status Pie + Bar 
 fig, axes = plt.subplots(1, 2, figsize=(13, 5))
 fig.suptitle('NorthStar Delivery Performance Overview', fontsize=15, fontweight='bold')
 
@@ -205,7 +191,7 @@ axes[1].set_ylabel('Count'); axes[1].set_title('Count by Status', fontsize=12, f
 axes[1].spines[['top','right']].set_visible(False)
 plt.tight_layout(); plt.savefig('fig1_delivery_overview.png', dpi=150, bbox_inches='tight'); plt.show()
 
-# --- Figure 2: Zone failure heatmap ---
+#  Figure 2: Zone failure heatmap 
 fig, ax = plt.subplots(figsize=(9, 5))
 zone_fail_matrix = zone_fail[['Failed','Delayed','OnTime']] if 'Failed' in zone_fail.columns else zone_fail
 sns.heatmap(zone_fail_matrix, annot=True, fmt='.1f', cmap='RdYlGn_r',
@@ -214,12 +200,12 @@ ax.set_title('Delivery Outcome % by Pickup Zone', fontsize=13, fontweight='bold'
 ax.set_xlabel('Delivery Status'); ax.set_ylabel('Pickup Zone')
 plt.tight_layout(); plt.savefig('fig2_zone_heatmap.png', dpi=150, bbox_inches='tight'); plt.show()
 
-# --- Figure 3: Hub performance ---
+#  Figure 3: Hub performance
 fig, ax = plt.subplots(figsize=(9, 5))
 hub_sorted = hub_perf.sort_values('failure_pct', ascending=True)
 bars = ax.barh(hub_sorted['hub_name'], hub_sorted['failure_pct'],
-               color=['#e74c3c' if v > 17 else '#f39c12' if v > 12 else '#2ecc71'
-                      for v in hub_sorted['failure_pct']])
+color=['#e74c3c' if v > 17 else '#f39c12' if v > 12 else '#2ecc71'
+         for v in hub_sorted['failure_pct']])
 for bar, val in zip(bars, hub_sorted['failure_pct']):
     ax.text(bar.get_width()+0.2, bar.get_y()+bar.get_height()/2,
             f'{val:.1f}%', va='center', fontweight='bold')
@@ -227,7 +213,7 @@ ax.set_xlabel('Failure Rate (%)'); ax.set_title('Delivery Failure Rate by Hub', 
 ax.spines[['top','right']].set_visible(False)
 plt.tight_layout(); plt.savefig('fig3_hub_failure.png', dpi=150, bbox_inches='tight'); plt.show()
 
-# --- Figure 4: Complaint types bar ---
+# Figure 4: Complaint types bar
 fig, ax = plt.subplots(figsize=(8, 5))
 comp_counts = complaints['complaint_type'].value_counts()
 ax.barh(comp_counts.index, comp_counts.values, color=fig_colors[:len(comp_counts)])
@@ -238,7 +224,7 @@ ax.set_title('Complaint Volume by Type', fontsize=13, fontweight='bold')
 ax.spines[['top','right']].set_visible(False)
 plt.tight_layout(); plt.savefig('fig4_complaints.png', dpi=150, bbox_inches='tight'); plt.show()
 
-# --- Figure 5: Driver training vs rating scatter ---
+#  Figure 5: Driver training vs rating scatter 
 fig, ax = plt.subplots(figsize=(7, 5))
 emp_palette = {'FullTime':'#2980b9','PartTime':'#e74c3c','Contract':'#f39c12'}
 for etype, grp in drivers.dropna(subset=['training_score','driver_rating']).groupby('employment_type'):
@@ -255,7 +241,7 @@ ax.set_title('Driver Training Score vs Rating', fontsize=13, fontweight='bold')
 ax.legend(fontsize=9); ax.spines[['top','right']].set_visible(False)
 plt.tight_layout(); plt.savefig('fig5_driver_scatter.png', dpi=150, bbox_inches='tight'); plt.show()
 
-# --- Figure 6: API Latency boxplot ---
+#  Figure 6: API Latency boxplot 
 fig, ax = plt.subplots(figsize=(10, 5))
 event_order = app_events.groupby('event_type')['api_latency_ms'].mean().sort_values(ascending=False).index
 sns.boxplot(data=app_events, x='event_type', y='api_latency_ms', order=event_order,
@@ -266,7 +252,7 @@ ax.set_title('App API Latency Distribution by Event Type', fontsize=13, fontweig
 ax.spines[['top','right']].set_visible(False)
 plt.tight_layout(); plt.savefig('fig6_api_latency.png', dpi=150, bbox_inches='tight'); plt.show()
 
-# --- Figure 7: Order value by service type ---
+#  Figure 7: Order value by service type
 fig, ax = plt.subplots(figsize=(8, 5))
 service_types = orders['service_type'].unique()
 data_by_service = [orders[orders['service_type']==s]['order_value'].dropna().values for s in service_types]
@@ -278,7 +264,7 @@ ax.set_title('Order Value Distribution by Service Type', fontsize=13, fontweight
 ax.spines[['top','right']].set_visible(False)
 plt.tight_layout(); plt.savefig('fig7_order_value.png', dpi=150, bbox_inches='tight'); plt.show()
 
-# --- Figure 8: Vehicle battery health distribution ---
+#  Figure 8: Vehicle battery health distribution 
 fig, ax = plt.subplots(figsize=(8, 5))
 for vtype, grp in vehicles.groupby('vehicle_type'):
     ax.hist(grp['battery_health_pct'].dropna(), bins=15, alpha=0.6, label=vtype)
@@ -289,9 +275,7 @@ plt.tight_layout(); plt.savefig('fig8_battery_health.png', dpi=150, bbox_inches=
 
 print("\nAll Python visualisations complete.")
 
-# ============================================================
 # 6. STATISTICAL TESTS
-# ============================================================
 
 print("\n=== STATISTICAL TESTS ===")
 
