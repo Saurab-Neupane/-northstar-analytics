@@ -1,7 +1,5 @@
 # NorthStar Urban Mobility – Python Data Processing & Analytics
 # Databases and Analytics Assignment
-
-# Install required libraries (Google Colab)
 # !pip install pandas numpy matplotlib seaborn scipy
 
 import pandas as pd
