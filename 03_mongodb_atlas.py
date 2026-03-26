@@ -13,7 +13,7 @@ import pprint
 
 # 1. CONNECTION
 # Replace with the MongoDB Atlas connection string
-CONNECTION_STRING = "mongodb+srv://<username>:<password>@<cluster>.mongodb.net/?retryWrites=true&w=majority"
+CONNECTION_STRING = "mongodb+srv://Saurab_neupane:Thegoatis07@databasecluster.ohr43vf.mongodb.net/?appName=Databasecluster"
 
 client = MongoClient(CONNECTION_STRING)
 db = client["northstar_db"]
@@ -69,7 +69,7 @@ combining exception records, nested histories, and semi-structured data.
 """
 
 # 4. BUILD AND INSERT COLLECTION 1: customer_cases
-print("\n=== Building customer_cases collection ===")
+print("\n Building customer_cases collection ")
 
 customers_df = dfs['customers'].copy()
 complaints_df = dfs['complaints'].copy()
@@ -206,7 +206,7 @@ result = db.delivery_operations.insert_many(delivery_docs)
 print(f"  Inserted {len(result.inserted_ids)} delivery_operations documents")
 
 # 6. BUILD COLLECTION 3: app_session_events
-print("\n=== Building app_session_events collection ===")
+print("\nBuilding app_session_events collection ")
 
 ae_df = dfs['app_events'].copy()
 ae_df['event_timestamp'] = pd.to_datetime(ae_df['event_timestamp'], errors='coerce')
@@ -254,7 +254,7 @@ result = db.app_session_events.insert_many(session_docs)
 print(f"  Inserted {len(result.inserted_ids)} app_session_events documents")
 
 # 7. CRUD OPERATIONS
-print("\n=== CRUD OPERATIONS ===")
+print("\n CRUD OPERATIONS ")
 
 # CREATE - Add a new complaint to an existing customer
 new_complaint = {
@@ -302,10 +302,10 @@ db.customer_cases.update_one(
 print("DELETE: Removed test complaint from C0001")
 
 # 8. AGGREGATION PIPELINE QUERIES
-print("\n=== AGGREGATION PIPELINE QUERIES ===")
+print("\n AGGREGATION PIPELINE QUERIES ")
 
 # Aggregation 1: Average rating and failure rate by hub
-print("\n--- Agg 1: Delivery performance by hub ---")
+print("\n Agg 1: Delivery performance by hub ")
 pipeline_hub = [
     {"$group": {
         "_id": "$hub_id",
@@ -326,7 +326,7 @@ for r in hub_results:
     print(f"  Hub {r['_id']}: {r['total_deliveries']} deliveries, {r['failure_pct']}% failed, avg rating {round(r['avg_rating'] or 0,2)}")
 
 # Aggregation 2: Customer complaint risk profiling
-print("\n--- Agg 2: High-risk customers (2+ complaints) ---")
+print("\n Agg 2: High-risk customers (2+ complaints) ")
 pipeline_risk = [
     {"$match": {"total_complaints": {"$gte": 2}}},
     {"$project": {
@@ -350,7 +350,7 @@ for r in risk_results:
           f"£{r.get('total_compensation') or 0:.2f} compensation")
 
 # Aggregation 3: Delivery incident type breakdown
-print("\n--- Agg 3: Incident types in failed deliveries ---")
+print("\n Agg 3: Incident types in failed deliveries ")
 pipeline_inc = [
     {"$match": {"delivery_status": "Failed", "incident_count": {"$gt": 0}}},
     {"$unwind": "$incidents"},
@@ -366,7 +366,7 @@ for r in inc_results:
     print(f"  {r['_id']}: {r['count']} occurrences, avg resolve {round(r['avg_severity_hours'] or 0,1)}h")
 
 # Aggregation 4: App session quality analysis
-print("\n--- Agg 4: App sessions with high latency or failures ---")
+print("\n Agg 4: App sessions with high latency or failures ")
 pipeline_app = [
     {"$match": {"$or": [{"avg_latency_ms": {"$gt": 600}}, {"failed_events": {"$gt": 0}}]}},
     {"$group": {
@@ -383,7 +383,7 @@ for r in app_results:
     print(f"  {r['_id']}: {r['total_sessions']} problem sessions, avg latency {round(r['avg_latency'],0)}ms")
 
 # 9. QUERY OPTIMISATION: INDEXING
-print("\n=== QUERY OPTIMISATION: INDEXING ===")
+print("\n QUERY OPTIMISATION: INDEXING ")
 
 # Create compound index on delivery_operations
 db.delivery_operations.create_index(
@@ -424,7 +424,7 @@ db.app_session_events.create_index(
 print("  Created indexes on app_session_events: customer+latency, has_escalation")
 
 # 10. EXPLAIN PLAN – BEFORE AND AFTER INDEX
-print("\n=== EXPLAIN PLAN ANALYSIS ===")
+print("\n EXPLAIN PLAN ANALYSIS ")
 
 # Simulate before-index scenario with a hint to ignore indexes
 explain_hint_no_idx = db.delivery_operations.find(
