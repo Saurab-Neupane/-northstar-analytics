@@ -107,29 +107,29 @@ print(f"New customer features: complaint_count, total_comp")
 
 # 3. DESCRIPTIVE STATISTICS
 
-print("\n=== DESCRIPTIVE STATISTICS ===")
-print("\n--- Deliveries ---")
+print("\n DESCRIPTIVE STATISTICS ")
+print("\n Deliveries ")
 print(deliveries[['route_distance_km','customer_rating_post_delivery',
 'fuel_or_charge_cost','actual_duration_hrs']].describe().round(3))
 
-print("\n--- Orders ---")
+print("\n Orders ")
 print(orders[['order_value','promised_window_hours']].describe().round(3))
 
-print("\n--- Delivery Status Distribution ---")
+print("\n Delivery Status Distribution ")
 status_dist = deliveries['delivery_status'].value_counts()
 for s, c in status_dist.items():
     print(f"  {s}: {c} ({c/len(deliveries)*100:.1f}%)")
 
 # 4. ANALYTICAL FINDINGS
 # Finding 1: Zone-level failure analysis
-print("\n=== Finding 1: Delivery Outcomes by Pickup Zone ===")
+print("\n Finding 1: Delivery Outcomes by Pickup Zone ")
 merged = deliveries.merge(orders, on='order_id', how='left')
 zone_fail = merged.groupby('pickup_zone')['delivery_status'].value_counts(normalize=True).unstack().fillna(0) * 100
 zone_fail.columns.name = None
 print(zone_fail.round(1))
 
 # Finding 2: Hub-level performance
-print("\n=== Finding 2: Hub Failure Rates ===")
+print("\n Finding 2: Hub Failure Rates ")
 hub_perf = deliveries.groupby('hub_id').agg(
     total=('delivery_id', 'count'),
     failed=('delivery_status', lambda x: (x=='Failed').sum()),
@@ -141,7 +141,7 @@ hub_perf = hub_perf.merge(hubs[['hub_id','hub_name']], on='hub_id', how='left')
 print(hub_perf[['hub_name','total','failure_pct','avg_rating','avg_overrides']].sort_values('failure_pct', ascending=False).round(3))
 
 # Finding 3: Vehicle risk assessment
-print("\n=== Finding 3: High-Risk Vehicles ===")
+print("\n Finding 3: High-Risk Vehicles ")
 high_risk_veh = vehicles[
     (vehicles['maintenance_status'] == 'InRepair') & 
     (vehicles['odometer_km'] > 150000)
@@ -150,7 +150,7 @@ print(f"Vehicles in InRepair with odometer >150k km: {len(high_risk_veh)}")
 print(high_risk_veh[['vehicle_id','vehicle_type','odometer_km','battery_health_pct']].sort_values('odometer_km', ascending=False).head(8))
 
 # Finding 4: Manual override correlation
-print("\n=== Finding 4: Manual Override Analysis ===")
+print("\n Finding 4: Manual Override Analysis ")
 override_status = deliveries.groupby('delivery_status')['manual_route_override_count'].agg(['mean','sum'])
 print(override_status.round(3))
 corr_val, p_val = stats.pearsonr(
@@ -160,11 +160,11 @@ corr_val, p_val = stats.pearsonr(
 print(f"\nCorrelation (overrides vs rating): r={corr_val:.4f}, p={p_val:.4f}")
 
 # Finding 5: Complaint clustering
-print("\n=== Finding 5: Complaint Type & Severity Backlog ===")
+print("\n Finding 5: Complaint Type & Severity Backlog ")
 print(complaints.groupby(['complaint_type','severity'])['complaint_id'].count().unstack().fillna(0).astype(int))
 
 # Finding 6: App latency issues
-print("\n=== Finding 6: App Event API Latency (ms) ===")
+print("\n Finding 6: App Event API Latency (ms) ")
 print(app_events.groupby('event_type')['api_latency_ms'].agg(['mean','median','max']).sort_values('mean', ascending=False).round(1))
 
 # 5. VISUALISATIONS
@@ -233,7 +233,7 @@ m, b = np.polyfit(drivers.dropna(subset=['training_score','driver_rating'])['tra
 x_line = np.linspace(drivers['training_score'].min(), drivers['training_score'].max(), 100)
 r = np.corrcoef(drivers.dropna(subset=['training_score','driver_rating'])['training_score'],
                 drivers.dropna(subset=['training_score','driver_rating'])['driver_rating'])[0,1]
-ax.plot(x_line, m*x_line+b, '--', color='grey', linewidth=1.5, label=f'Trend r={r:.3f}')
+ax.plot(x_line, m*x_line+b, '-', color='grey', linewidth=1.5, label=f'Trend r={r:.3f}')
 ax.set_xlabel('Training Score'); ax.set_ylabel('Driver Rating')
 ax.set_title('Driver Training Score vs Rating', fontsize=13, fontweight='bold')
 ax.legend(fontsize=9); ax.spines[['top','right']].set_visible(False)
@@ -275,7 +275,7 @@ print("\nAll Python visualisations complete.")
 
 # 6. STATISTICAL TESTS
 
-print("\n=== STATISTICAL TESTS ===")
+print("\nSTATISTICAL TESTS ")
 
 # Chi-square: complaint type vs severity
 contingency = pd.crosstab(complaints['complaint_type'], complaints['severity'])
