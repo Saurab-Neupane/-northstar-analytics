@@ -13,7 +13,7 @@ import pprint
 
 # 1. CONNECTION
 # Replace with the MongoDB Atlas connection string
-CONNECTION_STRING = "mongodb+srv://Saurab_neupane:Thegoatis07@databasecluster.ohr43vf.mongodb.net/?appName=Databasecluster"
+CONNECTION_STRING = "mongodb+srv://Saurab_neupane:@databasecluster.ohr43vf.mongodb.net/?appName=Databasecluster"
 
 client = MongoClient(CONNECTION_STRING)
 db = client["northstar_db"]
