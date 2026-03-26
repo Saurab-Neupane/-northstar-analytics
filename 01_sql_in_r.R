@@ -56,7 +56,7 @@ cat("Customers:", nrow(customers), "| Orders:", nrow(orders),
 
 # 2. SQL QUERIES IN R
 #  SQL Query 1: Delivery failure rates by pickup zone 
-cat("\n=== SQL Query 1: Delivery Failure Rate by Zone ===\n")
+cat("\n SQL Query 1: Delivery Failure Rate by Zone \n")
 q1 <- sqldf("
   SELECT o.pickup_zone,
      COUNT(*) AS total_deliveries,
@@ -73,7 +73,7 @@ q1 <- sqldf("
 print(q1)
 
 #  SQL Query 2: High-value repeat complainers 
-cat("\n=== SQL Query 2: Repeat Complainers Joined with Customer Data ===\n")
+cat("\n SQL Query 2: Repeat Complainers Joined with Customer Data \n")
 q2 <- sqldf("
   SELECT c.customer_id,
          cu.customer_type,
@@ -91,7 +91,7 @@ q2 <- sqldf("
 print(q2)
 
 #  SQL Query 3: Hub-level operational overview 
-cat("\n=== SQL Query 3: Hub Performance Overview ===\n")
+cat("\n SQL Query 3: Hub Performance Overview \n")
 q3 <- sqldf("
   SELECT d.hub_id,
          h.hub_name,
@@ -111,7 +111,7 @@ q3 <- sqldf("
 print(q3)
 
 # SQL Query 4: Driver performance with incident history 
-cat("\n=== SQL Query 4: Drivers with Incidents and Low Ratings ===\n")
+cat("\n SQL Query 4: Drivers with Incidents and Low Ratings \n")
 q4 <- sqldf("
   SELECT d.driver_id,
          d.employment_type,
@@ -132,7 +132,7 @@ q4 <- sqldf("
 print(q4)
 
 # SQL Query 5: Service profitability by type 
-cat("\n=== SQL Query 5: Service Type Profitability Analysis ===\n")
+cat("\n SQL Query 5: Service Type Profitability Analysis \n")
 q5 <- sqldf("
   SELECT o.service_type,
          COUNT(o.order_id) AS total_orders,
@@ -150,7 +150,7 @@ print(q5)
 # 3. OPTIMISED SQL WITH INDEXING CONCEPTS IN R
 # Creating an indexed subset for hub-zone query performance
 # In a real DB, this represents: CREATE INDEX idx_del_hub ON deliveries(hub_id);
-cat("\n=== SQL Query 6 (Optimised): Zone-to-Zone Demand Matrix ===\n")
+cat("\n SQL Query 6 (Optimised): Zone-to-Zone Demand Matrix \n")
 q6 <- sqldf("
   SELECT pickup_zone, dropoff_zone,
          COUNT(*) AS journey_count,
@@ -171,20 +171,20 @@ deliveries$actual_duration_hrs <- as.numeric(difftime(
   deliveries$delivery_completed_at, deliveries$dispatch_time, units="hours"))
 
 # Pearson correlation matrix
-cat("\n=== Pearson Correlation Matrix (Deliveries) ===\n")
+cat("\n Pearson Correlation Matrix (Deliveries) \n")
 num_cols <- deliveries[, c("manual_route_override_count","route_distance_km", "customer_rating_post_delivery","fuel_or_charge_cost",
  "actual_duration_hrs")]
 num_cols <- num_cols[complete.cases(num_cols), ]
 print(round(cor(num_cols, method="pearson"), 4))
 
 # One-way ANOVA: Does delivery zone affect ratings?
-cat("\n=== ANOVA: Rating by Pickup Zone ===\n")
+cat("\n ANOVA: Rating by Pickup Zone \n")
 merged_rd <- merge(deliveries, orders, by="order_id")
 anova_model <- aov(customer_rating_post_delivery ~ pickup_zone, data=merged_rd)
 print(summary(anova_model))
 
 # T-test: Manual override vs no override on ratings
-cat("\n=== T-Test: Rating with override vs without ===\n")
+cat("\n T-Test: Rating with override vs without \n")
 with_override <- deliveries$customer_rating_post_delivery[
   deliveries$manual_route_override_count > 0 & !is.na(deliveries$customer_rating_post_delivery)]
 without_override <- deliveries$customer_rating_post_delivery[
